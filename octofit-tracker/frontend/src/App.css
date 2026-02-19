@@ -1,38 +1,163 @@
-.App {
+/* OctoFit Tracker – global styles */
+
+body {
+  background-color: #f0f4f8;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ── Navbar ── */
+.octofit-navbar {
+  background: linear-gradient(90deg, #1a1a2e 0%, #16213e 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.octofit-navbar .navbar-brand {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #58a6ff !important;
+  letter-spacing: 0.5px;
+}
+
+.octofit-navbar .nav-link {
+  color: #c9d1d9 !important;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.octofit-navbar .nav-link:hover,
+.octofit-navbar .nav-link.active {
+  background-color: rgba(88, 166, 255, 0.15);
+  color: #58a6ff !important;
+}
+
+/* ── Hero banner ── */
+.octofit-hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 60%, #16213e 100%);
+  color: #ffffff;
+  padding: 4rem 1rem;
   text-align: center;
+  border-bottom: 3px solid #58a6ff;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.octofit-hero h1 {
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: 1px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.octofit-hero .lead {
+  font-size: 1.15rem;
+  color: #8b949e;
+  margin-top: 0.75rem;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+/* ── Feature cards on home page ── */
+.octofit-feature-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+  background: #ffffff;
+}
+
+.octofit-feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.octofit-feature-card .card-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ── Component page card wrapper ── */
+.octofit-page-card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.octofit-page-card .card-header {
+  background: linear-gradient(90deg, #1a1a2e 0%, #0f3460 100%);
+  color: #ffffff;
+  border-radius: 12px 12px 0 0 !important;
+  padding: 1rem 1.5rem;
+}
+
+.octofit-page-card .card-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+/* ── Tables ── */
+.octofit-table {
+  margin-bottom: 0;
+}
+
+.octofit-table thead th {
+  background-color: #0f3460;
+  color: #ffffff;
+  border-color: #1a1a2e;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.6px;
+  padding: 0.85rem 1rem;
+}
+
+.octofit-table tbody tr {
+  transition: background 0.15s;
+}
+
+.octofit-table tbody tr:hover {
+  background-color: rgba(88, 166, 255, 0.07);
+}
+
+.octofit-table td {
+  vertical-align: middle;
+  padding: 0.75rem 1rem;
+  color: #24292f;
+}
+
+/* ── Rank badge ── */
+.rank-badge {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.85rem;
 }
 
-.App-link {
-  color: #61dafb;
+.rank-gold   { background: #ffd700; color: #333; }
+.rank-silver { background: #c0c0c0; color: #333; }
+.rank-bronze { background: #cd7f32; color: #fff; }
+.rank-other  { background: #e9ecef; color: #555; }
+
+/* ── Loading spinner ── */
+.octofit-spinner {
+  color: #0f3460;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* ── Empty-state ── */
+.octofit-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #6c757d;
 }
+
+.octofit-empty .empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.4;
+}
+
