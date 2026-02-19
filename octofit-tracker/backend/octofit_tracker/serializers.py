@@ -10,7 +10,7 @@ class OctoFitUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OctoFitUser
-        fields = ['_id', 'username', 'email', 'password', 'age']
+        fields = ['_id', 'name', 'username', 'email', 'password', 'age']
 
 
 class TeamSerializer(serializers.ModelSerializer):

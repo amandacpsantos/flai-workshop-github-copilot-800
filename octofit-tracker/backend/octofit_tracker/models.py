@@ -3,6 +3,7 @@ from djongo import models
 
 class OctoFitUser(models.Model):
     _id = models.ObjectIdField()
+    name = models.CharField(max_length=200, default='')
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=255)

@@ -78,6 +78,7 @@ function Users() {
                 <thead>
                   <tr>
                     <th>#</th>
+                    <th>Name</th>
                     <th>Username</th>
                     <th>Email</th>
                     <th>Age</th>
@@ -87,7 +88,8 @@ function Users() {
                   {users.map((user, index) => (
                     <tr key={user._id || user.id || index}>
                       <td className="text-muted">{index + 1}</td>
-                      <td><span className="fw-semibold">{user.username || 'N/A'}</span></td>
+                      <td><span className="fw-semibold">{user.name || user.username || 'N/A'}</span></td>
+                      <td>{user.username || user.name || 'N/A'}</td>
                       <td><a href={`mailto:${user.email}`} className="text-decoration-none">{user.email || 'N/A'}</a></td>
                       <td>{user.age ? <span className="badge bg-secondary">{user.age}</span> : 'N/A'}</td>
                     </tr>

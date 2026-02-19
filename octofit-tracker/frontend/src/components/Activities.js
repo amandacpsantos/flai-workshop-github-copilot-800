@@ -88,8 +88,8 @@ function Activities() {
                     const user = activity.user;
                     const username =
                       user && typeof user === 'object'
-                        ? user.username || user.email || String(user._id) || 'N/A'
-                        : user || activity.username || 'N/A';
+                        ? user.name || user.username || user.email || String(user._id) || 'N/A'
+                        : user || activity.name || activity.username || 'N/A';
                     return (
                       <tr key={activity._id || activity.id || index}>
                         <td><span className="fw-semibold">{username}</span></td>

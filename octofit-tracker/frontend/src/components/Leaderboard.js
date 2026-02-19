@@ -94,8 +94,8 @@ function Leaderboard() {
                     const user = entry.user;
                     const username =
                       user && typeof user === 'object'
-                        ? user.username || user.email || String(user._id) || 'N/A'
-                        : user || entry.username || 'N/A';
+                        ? user.name || user.username || user.email || String(user._id) || 'N/A'
+                        : user || entry.name || entry.username || 'N/A';
                     return (
                       <tr key={entry._id || entry.id || index}>
                         <td><span className={rankClass(index)}>{index + 1}</span></td>
