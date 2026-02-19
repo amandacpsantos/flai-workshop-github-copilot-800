@@ -12,9 +12,8 @@ function Users() {
   const [saveError, setSaveError]   = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const apiBase  = `https://${process.env.REACT_APP_CODESPACE_NAME}-8000.app.github.dev/api`;
-  const usersUrl = `${apiBase}/users/`;
-  const teamsUrl = `${apiBase}/teams/`;
+  const usersUrl = `https://${process.env.REACT_APP_CODESPACE_NAME}-8000.app.github.dev/api/users/`;
+  const teamsUrl = `https://${process.env.REACT_APP_CODESPACE_NAME}-8000.app.github.dev/api/teams/`;
 
   // ── Fetch users + teams in parallel ──────────────────────────────────────
   useEffect(() => {
