@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
+function formatDate(raw) {
+  if (!raw) return 'N/A';
+  // Handle MongoDB $date objects: { "$date": "..." }
+  const value = raw && typeof raw === 'object' && raw.$date ? raw.$date : raw;
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return String(raw);
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
 function Activities() {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -95,7 +104,7 @@ function Activities() {
                         <td><span className="fw-semibold">{username}</span></td>
                         <td><span className="badge bg-primary">{activity.activity_type || activity.type || 'N/A'}</span></td>
                         <td>{activity.duration || 'N/A'}</td>
-                        <td>{activity.date || 'N/A'}</td>
+                        <td>{formatDate(activity.date)}</td>
                       </tr>
                     );
                   })}

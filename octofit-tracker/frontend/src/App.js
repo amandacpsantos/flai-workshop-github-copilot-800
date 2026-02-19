@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, NavLink, Link } from 'react-router-dom';
 import './App.css';
 import octoLogo from './octofitapp-small.png';
 import Activities from './components/Activities';
@@ -27,15 +27,15 @@ function Home() {
         <div className="row g-4 justify-content-center">
           {features.map((f) => (
             <div className="col-12 col-sm-6 col-md-4 col-lg-2-4" key={f.title}>
-              <NavLink to={f.path} className="text-decoration-none">
-                <div className="card octofit-feature-card h-100 text-center p-3">
+              <Link to={f.path} className="text-decoration-none">
+                <div className="card octofit-feature-card h-100 text-center p-3" style={{cursor: 'pointer'}}>
                   <div className="card-body">
                     <div className="card-icon">{f.icon}</div>
                     <h5 className="card-title fw-bold">{f.title}</h5>
                     <p className="card-text text-muted small">{f.desc}</p>
                   </div>
                 </div>
-              </NavLink>
+              </Link>
             </div>
           ))}
         </div>

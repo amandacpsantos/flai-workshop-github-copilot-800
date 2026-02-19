@@ -85,22 +85,27 @@ function Leaderboard() {
                 <thead>
                   <tr>
                     <th style={{width: '80px'}}>Rank</th>
-                    <th>User</th>
-                    <th>Score</th>
+                    <th>Name</th>
+                    <th>Team</th>
+                    <th>Calories</th>
+                    <th>Activities</th>
+                    <th>Distance (km)</th>
                   </tr>
                 </thead>
                 <tbody>
                   {entries.map((entry, index) => {
-                    const user = entry.user;
-                    const username =
-                      user && typeof user === 'object'
-                        ? user.name || user.username || user.email || String(user._id) || 'N/A'
-                        : user || entry.name || entry.username || 'N/A';
+                    const displayName = entry.user_name ||
+                      (entry.user && typeof entry.user === 'object'
+                        ? entry.user.name || entry.user.username || 'N/A'
+                        : entry.user || 'N/A');
                     return (
                       <tr key={entry._id || entry.id || index}>
-                        <td><span className={rankClass(index)}>{index + 1}</span></td>
-                        <td><span className="fw-semibold">{username}</span></td>
-                        <td><span className="badge bg-success fs-6">{entry.score || entry.points || 0}</span></td>
+                        <td><span className={rankClass((entry.rank || index + 1) - 1)}>{entry.rank || index + 1}</span></td>
+                        <td><span className="fw-semibold">{displayName}</span></td>
+                        <td><span className="badge bg-secondary">{entry.team || 'N/A'}</span></td>
+                        <td><span className="badge bg-danger">{entry.total_calories ?? entry.score ?? 0}</span></td>
+                        <td>{entry.total_activities ?? 'N/A'}</td>
+                        <td>{entry.total_distance ?? 'N/A'}</td>
                       </tr>
                     );
                   })}

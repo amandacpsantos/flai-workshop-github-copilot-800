@@ -93,7 +93,7 @@ function Teams() {
                             ? members.map((m, i) => {
                                 const label =
                                   m && typeof m === 'object'
-                                    ? m.username || m.email || String(m._id) || 'Member'
+                                    ? m.name || m.username || m.email || String(m._id) || 'Member'
                                     : String(m);
                                 return <span key={i} className="badge bg-secondary me-1">{label}</span>;
                               })

@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
+const difficultyBadge = {
+  Beginner:     'bg-success',
+  Intermediate: 'bg-warning text-dark',
+  Advanced:     'bg-danger',
+};
+
 function Workouts() {
   const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -78,16 +84,46 @@ function Workouts() {
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>Name</th>
+                    <th>Title</th>
                     <th>Description</th>
+                    <th>Difficulty</th>
+                    <th>Duration (min)</th>
+                    <th>Exercises</th>
+                    <th>Recommended For</th>
                   </tr>
                 </thead>
                 <tbody>
                   {workouts.map((workout, index) => (
                     <tr key={workout._id || workout.id || index}>
                       <td className="text-muted">{index + 1}</td>
-                      <td><span className="fw-semibold">{workout.name || 'N/A'}</span></td>
-                      <td className="text-muted">{workout.description || 'N/A'}</td>
+                      <td><span className="fw-semibold">{workout.title || workout.name || 'N/A'}</span></td>
+                      <td>{workout.description || 'N/A'}</td>
+                      <td>
+                        <span className={`badge ${difficultyBadge[workout.difficulty] || 'bg-secondary'}`}>
+                          {workout.difficulty || 'N/A'}
+                        </span>
+                      </td>
+                      <td>
+                        {workout.duration
+                          ? <span className="badge bg-info text-dark">{workout.duration} min</span>
+                          : 'N/A'}
+                      </td>
+                      <td>
+                        {Array.isArray(workout.exercises) && workout.exercises.length > 0 ? (
+                          <ul className="mb-0 ps-3 small">
+                            {workout.exercises.map((ex, i) => (
+                              <li key={i}>{ex}</li>
+                            ))}
+                          </ul>
+                        ) : 'N/A'}
+                      </td>
+                      <td>
+                        {Array.isArray(workout.recommended_for) && workout.recommended_for.length > 0
+                          ? workout.recommended_for.map((tag, i) => (
+                              <span key={i} className="badge bg-primary me-1 mb-1">{tag}</span>
+                            ))
+                          : 'N/A'}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
