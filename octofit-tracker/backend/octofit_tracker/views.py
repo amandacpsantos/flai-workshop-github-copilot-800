@@ -48,24 +48,30 @@ class OctoFitUserViewSet(viewsets.ModelViewSet):
         for field in ('name', 'username', 'email', 'age'):
             if field in request.data:
                 val = request.data[field]
-                update_fields[field] = int(val) if field == 'age' else val
+                if field == 'age':
+                    try:
+                        update_fields[field] = int(val) if val not in (None, '') else None
+                    except (ValueError, TypeError):
+                        update_fields[field] = None
+                else:
+                    update_fields[field] = val
 
         if update_fields:
             db.users.update_one({'_id': user_oid}, {'$set': update_fields})
 
         # Handle team membership change
-        new_team_id = request.data.get('team_id')
-        if new_team_id is not None:
-            try:
-                new_team_id = int(new_team_id)
-            except (ValueError, TypeError):
-                new_team_id = None
-
+        if 'team_id' in request.data:
+            new_team_id = request.data.get('team_id')
+            # Remove user from all teams first
+            db.teams.update_many({}, {'$pull': {'members': user_oid}})
             if new_team_id is not None:
-                # Remove user from all teams
-                db.teams.update_many({}, {'$pull': {'members': user_oid}})
-                # Add user to the chosen team
-                db.teams.update_one({'team_id': new_team_id}, {'$addToSet': {'members': user_oid}})
+                try:
+                    new_team_id = int(new_team_id)
+                except (ValueError, TypeError):
+                    new_team_id = None
+                if new_team_id is not None:
+                    # Add user to the chosen team
+                    db.teams.update_one({'team_id': new_team_id}, {'$addToSet': {'members': user_oid}})
 
         # Return updated user doc
         doc = db.users.find_one({'_id': user_oid})

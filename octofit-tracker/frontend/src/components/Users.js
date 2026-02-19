@@ -50,10 +50,10 @@ function Users() {
     const currentTeam = getUserTeam(user);
     setEditUser({
       _id:      user._id,
-      name:     user.name || '',
-      username: user.username || '',
-      email:    user.email || '',
-      age:      user.age || '',
+      name:     user.name ?? '',
+      username: user.username ?? '',
+      email:    user.email ?? '',
+      age:      user.age ?? '',
       team_id:  currentTeam ? currentTeam.team_id ?? '' : '',
     });
     setSaveError(null);
@@ -182,11 +182,11 @@ function Users() {
                     return (
                       <tr key={user._id || user.id || index}>
                         <td className="text-muted">{index + 1}</td>
-                        <td><span className="fw-semibold">{user.name || user.username || 'N/A'}</span></td>
-                        <td>{user.username || user.name || 'N/A'}</td>
+                        <td><span className="fw-semibold">{user.name || 'N/A'}</span></td>
+                        <td>{user.username || 'N/A'}</td>
                         <td><a href={`mailto:${user.email}`} className="text-decoration-none">{user.email || 'N/A'}</a></td>
                         <td>{user.age ? <span className="badge bg-secondary">{user.age}</span> : 'N/A'}</td>
-                        <td>{team ? <span className="badge bg-primary">{team.name}</span> : <span className="text-muted">—</span>}</td>
+                        <td>{team ? <span className="badge bg-primary">{team.name}</span> : 'N/A'}</td>
                         <td>
                           <button
                             className="btn btn-sm btn-outline-primary"

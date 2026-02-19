@@ -22,10 +22,19 @@ class OctoFitUserSerializer(serializers.ModelSerializer):
 
 class TeamSerializer(serializers.ModelSerializer):
     _id = serializers.SerializerMethodField()
+    team_id = serializers.SerializerMethodField()
     members = serializers.SerializerMethodField()
 
     def get__id(self, obj):
         return str(obj._id)
+
+    def get_team_id(self, obj):
+        try:
+            db = get_mongo_db()
+            team_doc = db.teams.find_one({'_id': ObjectId(str(obj._id))})
+            return team_doc.get('team_id') if team_doc else None
+        except Exception:
+            return None
 
     def get_members(self, obj):
         try:
@@ -49,7 +58,7 @@ class TeamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Team
-        fields = ['_id', 'name', 'members']
+        fields = ['_id', 'team_id', 'name', 'members']
 
 
 class ActivitySerializer(serializers.ModelSerializer):
