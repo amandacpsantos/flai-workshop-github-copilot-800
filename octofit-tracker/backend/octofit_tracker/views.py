@@ -1,9 +1,10 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, action
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 from rest_framework.reverse import reverse
 from pymongo import MongoClient
+from bson import ObjectId
 from .models import OctoFitUser, Team, Activity, Leaderboard, Workout
 from .serializers import (
     OctoFitUserSerializer,
@@ -33,6 +34,55 @@ def api_root(request, format=None):
 class OctoFitUserViewSet(viewsets.ModelViewSet):
     queryset = OctoFitUser.objects.all()
     serializer_class = OctoFitUserSerializer
+
+    def partial_update(self, request, pk=None):
+        """Update user fields + team membership directly in MongoDB."""
+        db = get_mongo_db()
+        try:
+            user_oid = ObjectId(pk)
+        except Exception:
+            return Response({'error': 'Invalid user id'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Fields to update on the user document
+        update_fields = {}
+        for field in ('name', 'username', 'email', 'age'):
+            if field in request.data:
+                val = request.data[field]
+                update_fields[field] = int(val) if field == 'age' else val
+
+        if update_fields:
+            db.users.update_one({'_id': user_oid}, {'$set': update_fields})
+
+        # Handle team membership change
+        new_team_id = request.data.get('team_id')
+        if new_team_id is not None:
+            try:
+                new_team_id = int(new_team_id)
+            except (ValueError, TypeError):
+                new_team_id = None
+
+            if new_team_id is not None:
+                # Remove user from all teams
+                db.teams.update_many({}, {'$pull': {'members': user_oid}})
+                # Add user to the chosen team
+                db.teams.update_one({'team_id': new_team_id}, {'$addToSet': {'members': user_oid}})
+
+        # Return updated user doc
+        doc = db.users.find_one({'_id': user_oid})
+        if not doc:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Find current team
+        team_doc = db.teams.find_one({'members': user_oid})
+        return Response({
+            '_id': str(doc['_id']),
+            'name': doc.get('name', ''),
+            'username': doc.get('username', ''),
+            'email': doc.get('email', ''),
+            'age': doc.get('age', 0),
+            'team_id': team_doc.get('team_id') if team_doc else None,
+            'team': team_doc.get('name') if team_doc else None,
+        })
 
 
 class TeamViewSet(viewsets.ModelViewSet):

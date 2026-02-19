@@ -1,33 +1,124 @@
 import React, { useState, useEffect } from 'react';
 
 function Users() {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers]   = useState([]);
+  const [teams, setTeams]   = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError]   = useState(null);
 
-  const apiUrl = `https://${process.env.REACT_APP_CODESPACE_NAME}-8000.app.github.dev/api/users/`;
+  // Edit modal state
+  const [editUser, setEditUser]     = useState(null);
+  const [saving, setSaving]         = useState(false);
+  const [saveError, setSaveError]   = useState(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
+  const apiBase  = `https://${process.env.REACT_APP_CODESPACE_NAME}-8000.app.github.dev/api`;
+  const usersUrl = `${apiBase}/users/`;
+  const teamsUrl = `${apiBase}/teams/`;
+
+  // ── Fetch users + teams in parallel ──────────────────────────────────────
   useEffect(() => {
-    console.log('Users: fetching from REST API endpoint:', apiUrl);
-    fetch(apiUrl, {
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        console.log('Users: fetched data:', data);
-        setUsers(Array.isArray(data) ? data : data.results || []);
+    console.log('Users: fetching from REST API endpoint:', usersUrl);
+    Promise.all([
+      fetch(usersUrl, { headers: { Accept: 'application/json' } }).then(r => r.json()),
+      fetch(teamsUrl, { headers: { Accept: 'application/json' } }).then(r => r.json()),
+    ])
+      .then(([uData, tData]) => {
+        console.log('Users: fetched data:', uData);
+        console.log('Teams for dropdown:', tData);
+        setUsers(Array.isArray(uData) ? uData : uData.results || []);
+        setTeams(Array.isArray(tData) ? tData : tData.results || []);
         setLoading(false);
       })
-      .catch((err) => {
+      .catch(err => {
         console.error('Users: error fetching data:', err);
         setError(err.message);
         setLoading(false);
       });
-  }, [apiUrl]);
+  }, [usersUrl, teamsUrl]);
 
+  // ── Derive current team for a user ───────────────────────────────────────
+  function getUserTeam(user) {
+    const uid = user._id;
+    return teams.find(t =>
+      Array.isArray(t.members) &&
+      t.members.some(m => (m && typeof m === 'object' ? m._id : m) === uid)
+    );
+  }
+
+  // ── Open edit modal ───────────────────────────────────────────────────────
+  function openEdit(user) {
+    const currentTeam = getUserTeam(user);
+    setEditUser({
+      _id:      user._id,
+      name:     user.name || '',
+      username: user.username || '',
+      email:    user.email || '',
+      age:      user.age || '',
+      team_id:  currentTeam ? currentTeam.team_id ?? '' : '',
+    });
+    setSaveError(null);
+    setSaveSuccess(false);
+  }
+
+  function closeEdit() { setEditUser(null); }
+
+  function handleField(e) {
+    setEditUser(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  }
+
+  // ── Save changes ──────────────────────────────────────────────────────────
+  function handleSave(e) {
+    e.preventDefault();
+    setSaving(true);
+    setSaveError(null);
+    setSaveSuccess(false);
+
+    console.log('Users: PATCH', `${usersUrl}${editUser._id}/`, editUser);
+
+    fetch(`${usersUrl}${editUser._id}/`, {
+      method: 'PATCH',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name:     editUser.name,
+        username: editUser.username,
+        email:    editUser.email,
+        age:      editUser.age,
+        team_id:  editUser.team_id !== '' ? editUser.team_id : null,
+      }),
+    })
+      .then(res => {
+        if (!res.ok) return res.json().then(d => { throw new Error(JSON.stringify(d)); });
+        return res.json();
+      })
+      .then(updated => {
+        console.log('Users: updated user:', updated);
+        // Refresh users list
+        return fetch(usersUrl, { headers: { Accept: 'application/json' } })
+          .then(r => r.json())
+          .then(uData => {
+            setUsers(Array.isArray(uData) ? uData : uData.results || []);
+          });
+      })
+      .then(() => {
+        // Also refresh teams so member counts update
+        return fetch(teamsUrl, { headers: { Accept: 'application/json' } })
+          .then(r => r.json())
+          .then(tData => setTeams(Array.isArray(tData) ? tData : tData.results || []));
+      })
+      .then(() => {
+        setSaving(false);
+        setSaveSuccess(true);
+        setTimeout(closeEdit, 900);
+      })
+      .catch(err => {
+        console.error('Users: save error:', err);
+        setSaveError(err.message);
+        setSaving(false);
+      });
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="container">
@@ -82,24 +173,102 @@ function Users() {
                     <th>Username</th>
                     <th>Email</th>
                     <th>Age</th>
+                    <th>Team</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((user, index) => (
-                    <tr key={user._id || user.id || index}>
-                      <td className="text-muted">{index + 1}</td>
-                      <td><span className="fw-semibold">{user.name || user.username || 'N/A'}</span></td>
-                      <td>{user.username || user.name || 'N/A'}</td>
-                      <td><a href={`mailto:${user.email}`} className="text-decoration-none">{user.email || 'N/A'}</a></td>
-                      <td>{user.age ? <span className="badge bg-secondary">{user.age}</span> : 'N/A'}</td>
-                    </tr>
-                  ))}
+                  {users.map((user, index) => {
+                    const team = getUserTeam(user);
+                    return (
+                      <tr key={user._id || user.id || index}>
+                        <td className="text-muted">{index + 1}</td>
+                        <td><span className="fw-semibold">{user.name || user.username || 'N/A'}</span></td>
+                        <td>{user.username || user.name || 'N/A'}</td>
+                        <td><a href={`mailto:${user.email}`} className="text-decoration-none">{user.email || 'N/A'}</a></td>
+                        <td>{user.age ? <span className="badge bg-secondary">{user.age}</span> : 'N/A'}</td>
+                        <td>{team ? <span className="badge bg-primary">{team.name}</span> : <span className="text-muted">—</span>}</td>
+                        <td>
+                          <button
+                            className="btn btn-sm btn-outline-primary"
+                            onClick={() => openEdit(user)}
+                          >
+                            ✏️ Edit
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           )}
         </div>
       </div>
+
+      {/* ── Edit Modal ── */}
+      {editUser && (
+        <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header" style={{ background: 'linear-gradient(90deg,#0d1b2a,#1b4965)', color: '#fff' }}>
+                <h5 className="modal-title">✏️ Edit User</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={closeEdit}></button>
+              </div>
+              <form onSubmit={handleSave}>
+                <div className="modal-body">
+                  {saveError && (
+                    <div className="alert alert-danger py-2">⚠️ {saveError}</div>
+                  )}
+                  {saveSuccess && (
+                    <div className="alert alert-success py-2">✅ Saved successfully!</div>
+                  )}
+
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">Name</label>
+                    <input className="form-control" name="name" value={editUser.name}
+                      onChange={handleField} placeholder="Full name" />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">Username</label>
+                    <input className="form-control" name="username" value={editUser.username}
+                      onChange={handleField} placeholder="Username" />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">Email</label>
+                    <input className="form-control" type="email" name="email" value={editUser.email}
+                      onChange={handleField} placeholder="Email address" />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">Age</label>
+                    <input className="form-control" type="number" name="age" value={editUser.age}
+                      onChange={handleField} placeholder="Age" min="1" max="120" />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">Team</label>
+                    <select className="form-select" name="team_id" value={editUser.team_id}
+                      onChange={handleField}>
+                      <option value="">— No team —</option>
+                      {teams.map(t => (
+                        <option key={t._id} value={t.team_id ?? t._id}>{t.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={closeEdit}
+                    disabled={saving}>Cancel</button>
+                  <button type="submit" className="btn btn-primary" disabled={saving}>
+                    {saving ? (
+                      <><span className="spinner-border spinner-border-sm me-2"></span>Saving…</>
+                    ) : '💾 Save changes'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
